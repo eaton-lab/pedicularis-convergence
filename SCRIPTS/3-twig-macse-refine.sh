@@ -29,12 +29,12 @@ parallel --progress -j $CORES ' \
     echo "$ogdir"
 
     # refine alignment (skips if alignment file already exists unless -f)
-    #twig macse-refine \
-    #    -i "$in" \
-    #    -o "$pre" \
-    #    -mo 100 \
-    #    -ms 25 \
-    #    -ac 0.5 \
-    #    -R \
+    twig macse-refine \
+        -i "$in" \
+        -o "$pre" \
+        -mo 100 \
+        -ms 25 \
+        -ac 0.5 \
+        -R \
     ' \
     :::: FILE_LISTS/msa_raws.txt
