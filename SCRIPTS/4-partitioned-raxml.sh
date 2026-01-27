@@ -1,19 +1,15 @@
 #!/usr/bin/env bash
 #
 # USAGE:
-#   - bash SCRIPTS/4-partitioned-raxml.sh IN OUT JOBS THREADS
+#   - bash SCRIPTS/4-partitioned-raxml.sh DIR JOBS THREADS
 # EXAMPLE:
-#   - bash SCRIPTS/4-partitioned-raxml.sh PROCESSED_OGS PROCESSED_OGS 4 10
+#   - bash SCRIPTS/4-partitioned-raxml.sh PROCESSED_OGS 4 10
 #
 
 # parse OUT arg, make dir, and export it
-IN=${1:?Usage: $0 INDIR OUTDIR [CORES]}
-OUT=${2:?Usage: $0 INDIR OUTDIR [CORES]}
-JOBS=${3:-4}
-THREADS=${4:-10}
-mkdir -p "$OUT"
-export OUT
-export THREADS
+DIR=${1:?Usage: $0 INDIR OUTDIR [CORES]}
+JOBS=${2:-4}
+THREADS=${3:-10}
 
 # get list of files to process
 mkdir -p FILE_LISTS/
