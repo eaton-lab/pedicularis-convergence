@@ -1,5 +1,8 @@
 #!/usr/bin/env bash
 #
+# Runs `twig macse-refine` to require >=100 nt overlap between sequences, >=25 samples per gene,
+# to rerun alignment if any samples are removed, and to trim edges to 50% coverage.
+#
 # USAGE:
 #   - bash SCRIPTS/3-twig-macse-refine.sh IN OUT CORES
 # EXAMPLE:
@@ -7,15 +10,12 @@
 #
 
 # parse OUT arg, make dir, and export it
-IN=${1:?Usage: $0 INDIR OUTDIR [CORES]}
-OUT=${2:?Usage: $0 INDIR OUTDIR [CORES]}
-CORES=${3:-10}
-mkdir -p "$OUT"
-export OUT   # make OUT visible inside GNU parallel jobs
+DIR=${1:?Usage: $0 INDIR OUTDIR [CORES]}
+CORES=${2:-10}
 
 # get list of files to process
 mkdir -p FILE_LISTS/
-find $IN/ -maxdepth 2 -type f -name 'OG*.msa_raw.nt.fa' | LC_ALL=C sort > FILE_LISTS/msa_raws.txt
+find $DIR/ -maxdepth 2 -type f -name 'OG*.msa_raw.nt.fa' | LC_ALL=C sort > FILE_LISTS/msa_raws.txt
 
 # twig macse-prep
 parallel --progress -j $CORES ' \
