@@ -1,0 +1,3 @@
+2026-01-27 21:10:03 | INFO     | macse_prep.py        | [OG_3815.trim.nt.fa] 84 seqs -> 81 seqs, filtered by [min_homology=0, min_length=0, user=0, isoform=3])
+2026-01-27 21:10:03 | INFO     | macse_prep.py        | [OG_3815.trim.nt.fa] stats of retained sequences: mean_nt_length=2192.81; mean_nt_trimmed=33.30; mean_homology=0.98
+2026-01-27 21:10:03 | INFO     | macse_prep.py        | [OG_3815.trim.nt.fa] trimmed/filtered sequences written to PROCESSED_OGS_TEST/OG_3815/OG_3815.trim.nt.fa

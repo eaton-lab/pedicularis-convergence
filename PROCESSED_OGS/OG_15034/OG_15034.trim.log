@@ -1,0 +1,4 @@
+2026-01-27 21:17:04 | INFO     | macse_prep.py        | [OG_15034.trim.nt.fa] 32 seqs -> 14 seqs, filtered by [min_homology=3, min_length=0, user=0, isoform=15])
+2026-01-27 21:17:04 | INFO     | macse_prep.py        | [OG_15034.trim.nt.fa] stats of retained sequences: mean_nt_length=1191.43; mean_nt_trimmed=398.57; mean_homology=0.82
+2026-01-27 21:17:04 | INFO     | macse_prep.py        | [OG_15034.trim.nt.fa] locus did not pass 'min-count' filter (14 < 25)
+2026-01-27 21:17:04 | INFO     | macse_prep.py        | [OG_15034.trim.nt.fa] trimmed/filtered sequences written to PROCESSED_OGS_TEST/OG_15034/OG_15034.trim.nt.fa
