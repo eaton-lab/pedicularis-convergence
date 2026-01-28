@@ -15,7 +15,7 @@
 #   - files are assigned evenly among jobs (~12 per job)
 #   - each job has 1 core for 10 hours with 8G RAM
 #
-#SBATCH --account=eaton
+#SBATCH --account=e3b
 #SBATCH -J twig
 #SBATCH -t 10:00:00
 #SBATCH --cpus-per-task=1
@@ -30,15 +30,19 @@ set -euo pipefail
 # cd into the submit directory
 cd "${SLURM_SUBMIT_DIR:-$PWD}"
 
+# load variables
+OUT="PROCESSED_OGS"
+mkdir -p $OUT
+
 # load conda env
 source "$HOME/miniconda3/etc/profile.d/conda.sh"
 conda activate twig
 
 # Build ordered list of files to process
-LIST="file_list-msa_raw.txt"
+LIST="FILE_LISTS/burg_ogs_rng.txt"
 [[ -s "$LIST" ]] || { echo "Missing/empty $LIST" >&2; exit 1; }
 
-# ...
+# count njobs
 N=$(wc -l < "$LIST")
 (( N > 0 )) || { echo "No files listed in $LIST" >&2; exit 1; }
 
@@ -52,8 +56,8 @@ PER=$(( (N + NTASKS - 1) / NTASKS ))   # ceil(N/NTASKS)
 
 # get the array task ID to assign tasks to sub-job array
 tid=$(( SLURM_ARRAY_TASK_ID - 1 ))     # 0-based
-start=$(( tid * PER ))
-end=$(( start + PER ))
+start=$(( tid * PER + 1))
+end=$(( start + PER - 1))
 
 # if all jobs are finished, exit...
 (( start <= N )) || exit 0
@@ -61,19 +65,32 @@ end=$(( start + PER ))
 
 # read only the input filename for this array task ID and process it
 sed -n "${start},${end}p" "$LIST" | while IFS= read -r aln; do
-  hog_dir="$(dirname "$aln")"
-  HOG_ID="$(basename "$hog_dir")"
-  OUT="$hog_dir"
-  mkdir -p "$OUT"
 
-  twig macse-refine \
+  base="$(basename $aln)"             # OG0000009.fa
+  id="${base#OG}"; id="${id%.fa}"     # 0000009
+  id="$((10#$id))"                    # 9
+  og="OG_${id}"                       # OG_9
+  ogdir="$OUT/${og}"                  # PROCESSED_OGS/OG_9/
+  trim="${ogdir}/${og}.trim.nt.fa"    # PROCESSED_OGS/OG_9/OG_9.trim.nt.fa
+  log="${ogdir}/${og}.trim.log"       # PROCESSED_OGS/OG_9/OG_9.trim.log
+  mkdir -p "$ogdir"
+  echo "[${tid}] -i ${aln} -o ${trim} > ${log}"
+
+  # [post-check] skip if trim already exists (non-empty)
+  if [[ -s "$trim" ]]; then
+    echo "[${tid}] exists, skipping: $trim" >&2
+    continue
+  fi
+
+  # run macse-prep
+  twig macse-prep \
     -i "$aln" \
-    -o "${OUT}/${HOG_ID}.msa" \
-    -mo 100 \
-    -ms 25 \
-    -ac 0.5 \
-    -R -f
+    -o "$trim" \
+    -hf 0.3 -hi 0.6 -ml 200 -mc 25 -hc 15 -ti 33 -te 33 -f \
+    2>"$log"
+
+  # remove the ogdir if no trim file (did not pass filtering)
+  if [[ -e "$trim" && ! -s "$trim" ]]; then
+    rm -r $ogdir
+  fi
 done
-
-
-

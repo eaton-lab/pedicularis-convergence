@@ -1,0 +1,17 @@
+seqName;initialSeqLength;nbKeep;nbTrim;nbInformativeTrim;percentHomologExcludingExtremities;percentHomologIncludingExtremities;keptSequences
+DE523|Cluster-11828.0__TRINITY_DN33951_c0_g2_i1.p1;321;321;0;0;1.0;1.0;true
+DE528|Cluster-52357.0__TRINITY_DN31182_c0_g1_i1.p1;321;321;0;0;1.0;1.0;true
+DE528|Cluster-52357.1__TRINITY_DN31182_c0_g1_i9.p1;321;321;0;0;1.0;1.0;true
+DE546_urceolata_l|Cluster-16045.1__TRINITY_DN7407_c0_g1_i2.p1;321;321;0;0;1.0;1.0;true
+DE546_urceolata_l|Cluster-16045.0__TRINITY_DN7407_c0_g1_i4.p1;321;321;0;0;1.0;1.0;true
+DE546_urceolata_l|Cluster-16045.2__TRINITY_DN7407_c0_g1_i5.p1;324;324;0;0;1.0;1.0;true
+DE561|Cluster-3603.0__TRINITY_DN28170_c0_g1_i2.p1;321;321;0;0;1.0;1.0;true
+DE681|Cluster-57572.0__TRINITY_DN49253_c1_g1_i1.p1;321;321;0;0;1.0;1.0;true
+DE69|Cluster-53486.0__TRINITY_DN52970_c0_g1_i1.p1;321;321;0;0;1.0;1.0;true
+DE696-nodots|Cluster-51901.0__TRINITY_DN15846_c0_g2_i1.p1;321;321;0;0;1.0;1.0;true
+DE704-white|Cluster-45922.0__TRINITY_DN89200_c0_g1_i1.p1;321;321;0;0;1.0;1.0;true
+DE741|Cluster-57890.0__TRINITY_DN13901_c0_g1_i1.p1;321;321;0;0;1.0;1.0;true
+DE741|Cluster-57890.1__TRINITY_DN13901_c0_g1_i2.p1;321;321;0;0;1.0;1.0;true
+JJ74|Cluster-112305.0__TRINITY_DN5977_c1_g1_i5.p1;321;321;0;0;1.0;1.0;true
+JJ86|Cluster-26563.0__TRINITY_DN20239_c0_g1_i1.p1;321;321;0;0;1.0;1.0;true
+SRR11934227|Cluster-141967.1__TRINITY_DN122332_c0_g1_i1.p1;321;321;0;0;1.0;1.0;true
