@@ -1,21 +1,21 @@
 #!/usr/bin/env bash
 #
 # USAGE:
-#   - `find /moto/eaton/users/roc2109/hgt/OG_cds_fastas/ -type f -name "*.fasta" | shuf > FILE_LISTS/moto-ogs-rng.txt`
+#   - `find TMP_OGS/ -type f -name "*.fa" | shuf > FILE_LISTS/burg-ogs-rng.txt`
 #   - `sbatch SLURM_SCRIPTS/1-twig-macse-trim.sbatch
 # ACTION:
 #   - Runs `twig macse-prep` to trim/filter the raw orthogroups.
 # INPUT:
 #   - None. But you first must make a txt file with ordered files (see usage above)
 # OUTPUT:
-#   - PROCESSED_OGS/{OG}.trim.nt.fa
-#   - PROCESSED_OGS/{OG}.trim.info
+#   - OUT/{OG}.trim.nt.fa
+#   - OUT/{OG}.trim.nt.fa.info.tsv
 # CLUSTER RESOURCES REQUESTED:
 #   - submits up to 1000 jobs (cluster limit).
 #   - if ntasks (nfiles) is >1000 then multiple files are assigned to a job.
 #   - each job gets 1 core for 11:59 hours with 8G RAM
 #
-#SBATCH --account=eaton
+#SBATCH --account=e3b
 #SBATCH -J twig-trim
 #SBATCH -t 11:59:00
 #SBATCH --cpus-per-task=1
@@ -25,8 +25,8 @@
 #SBATCH -e twig-refine_%A_%a.log
 
 # SET THE IN and OUT PATHS -------------------------
-LIST="FILE_LISTS/moto-ogs-rng.txt"
-OUT="RACHEL_TEST"
+LIST="FILE_LISTS/burg-ogs-rng.txt"
+OUT="OGS"
 # --------------------------------------------------
 
 # REQUIRE LIST TO BE NON EMPTY
@@ -73,14 +73,13 @@ sed -n "${start},${end}p" "$LIST" | while IFS= read -r aln; do
 
   # aln                                  # OG_cds_fastas/OG0008000_OG0008999/OG0008847/OG0008847.cds.fasta
   base="$(basename $aln)"                # OG0008847.fa
-  id="${base#OG}"; id="${id%.cds.fasta}" # 0008847
+  id="${base#OG}"; id="${id%.fa}"        # 0008847
   id="$((10#$id))"                       # 8847
   og="OG_${id}"                          # OG_8847
-  ogdir="$OUT/${og}"                     # PROCESSED_OGS/OG_8847/
-  trim="${ogdir}/${og}.trim.nt.fa"       # PROCESSED_OGS/OG_8847/OG_8847.trim.nt.fa
-  log="${ogdir}/${og}.trim.log"          # PROCESSED_OGS/OG_8847/OG_8847.trim.log
+  ogdir="$OUT/${og}"                     # OGS/OG_8847/
+  trim="${ogdir}/${og}.trim.nt.fa"       # OGS/OG_8847/OG_8847.trim.nt.fa
+  log="${ogdir}/${og}.trim.log"          # OGS/OG_8847/OG_8847.trim.log
   mkdir -p "$ogdir"
-  #echo "[${tid}] -i ${aln} -o ${trim} > ${log}"
 
   # run macse-prep
   twig macse-trim \

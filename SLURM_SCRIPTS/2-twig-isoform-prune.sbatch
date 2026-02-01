@@ -1,15 +1,13 @@
 #!/usr/bin/env bash
 #
 # USAGE:
-#   - `sbatch SLURM_SCRIPTS/twig_refine.sbatch -- file-lists/files-raw_ogs.txt`
+#
 # ACTION:
-#   - Runs `twig macse-prep` to trim/filter the raw orthogroups.
+#
 # INPUT:
-#   - a txt file with ordered files from RAW_OGS/*.fa
-#   - create with `find RAW_OGS -maxdepth 2 -type f -name "*.fa" -print | LC_ALL=C sort > file-lists/files-raw_ogs.txt`
+#
 # OUTPUT:
-#   - PROCESSED_OGS/{OG}.trim.nt.fa
-#   - PROCESSED_OGS/{OG}.trim.info
+#
 # CLUSTER RESOURCES REQUESTED:
 #   - submits 1000 jobs (cluster limit) with up to 500 running concurrently.
 #   - files are assigned evenly among jobs (~12 per job)
@@ -20,9 +18,12 @@
 #SBATCH -t 10:00:00
 #SBATCH --cpus-per-task=1
 #SBATCH --mem=8G
-#SBATCH --array=1-1000%500
+#SBATCH --array=1-500
 #SBATCH -o twig-refine_%A_%a.log
 #SBATCH -e twig-refine_%A_%a.log
+
+# THE FILE LIST
+LIST="FILE_LISTS/burg-trim-rng.txt"
 
 # set pipefail
 set -euo pipefail
@@ -30,16 +31,11 @@ set -euo pipefail
 # cd into the submit directory
 cd "${SLURM_SUBMIT_DIR:-$PWD}"
 
-# load variables
-OUT="PROCESSED_OGS"
-mkdir -p $OUT
-
 # load conda env
 source "$HOME/miniconda3/etc/profile.d/conda.sh"
 conda activate twig
 
-# Build ordered list of files to process
-LIST="FILE_LISTS/burg_ogs_rng.txt"
+# Build ordered list of files to process --------------------------
 [[ -s "$LIST" ]] || { echo "Missing/empty $LIST" >&2; exit 1; }
 
 # count njobs
@@ -62,35 +58,26 @@ end=$(( start + PER - 1))
 # if all jobs are finished, exit...
 (( start <= N )) || exit 0
 (( end > N )) && end=$N
+# ---------------------------------------------------------------
 
 # read only the input filename for this array task ID and process it
 sed -n "${start},${end}p" "$LIST" | while IFS= read -r aln; do
 
-  base="$(basename $aln)"             # OG0000009.fa
-  id="${base#OG}"; id="${id%.fa}"     # 0000009
-  id="$((10#$id))"                    # 9
-  og="OG_${id}"                       # OG_9
-  ogdir="$OUT/${og}"                  # PROCESSED_OGS/OG_9/
-  trim="${ogdir}/${og}.trim.nt.fa"    # PROCESSED_OGS/OG_9/OG_9.trim.nt.fa
-  log="${ogdir}/${og}.trim.log"       # PROCESSED_OGS/OG_9/OG_9.trim.log
-  mkdir -p "$ogdir"
-  echo "[${tid}] -i ${aln} -o ${trim} > ${log}"
-
-  # [post-check] skip if trim already exists (non-empty)
-  if [[ -s "$trim" ]]; then
-    echo "[${tid}] exists, skipping: $trim" >&2
-    continue
-  fi
+  # aln                               # PROCESSED_OGS/OG_9/OG_9.trim.nt.fa
+  info="${aln}.info.tsv"              # ...
+  ogdir="$(dirname $aln)"             # PROCESSED_OGS/OG_9/
+  base="$(basename $aln)"             # OG_9.trim.nt.fa
+  og="${base%.trim.nt.fa}"            # OG_9
+  out="${ogdir}/${og}.trim.iso.nt.fa" #
+  log="${ogdir}/${og}.trim.iso.log"
+  #echo $aln $out $info $log
 
   # run macse-prep
-  twig macse-prep \
+  twig isoform-prune \
     -i "$aln" \
-    -o "$trim" \
-    -hf 0.3 -hi 0.6 -ml 200 -mc 25 -hc 15 -ti 33 -te 33 -f \
-    2>"$log"
-
-  # remove the ogdir if no trim file (did not pass filtering)
-  if [[ -e "$trim" && ! -s "$trim" ]]; then
-    rm -r $ogdir
-  fi
+    -o "$out" \
+    -I "$info" \
+    -s '.' 1 \
+    -l D \
+    2> "${log}"
 done
