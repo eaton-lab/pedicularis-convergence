@@ -19,9 +19,12 @@
 #SBATCH -t 10:00:00
 #SBATCH --cpus-per-task=1
 #SBATCH --mem=8G
-#SBATCH --array=1-1000%500
+#SBATCH --array=1-200
 #SBATCH -o twig-refine_%A_%a.log
 #SBATCH -e twig-refine_%A_%a.log
+
+# DEBUGGING CLUSTER
+echo "job=$SLURM_JOB_ID array=${SLURM_ARRAY_TASK_ID:-na} host=$(hostname) nodelist=$SLURM_NODELIST"
 
 # THE FILE LIST
 LIST="FILE_LISTS/burg-msa-raw-rng.txt"
@@ -68,6 +71,14 @@ sed -n "${start},${end}p" "$LIST" | while IFS= read -r aln; do
   base="$(basename $aln)"             # OG_9.msa_raw.nt.fa
   og="${base%.msa_raw.nt.fa}"         # OG_9
   pre="${ogdir}/${og}.msa"            # PROCESSED_OGS/OG_9/OG_9.msa
+
+  # skip if .raxml.support already exists
+  out="${pre}.nt.fa"
+  echo "out=${out}"
+  if [[ -s "$out" ]]; then
+      echo "[${SLURM_ARRAY_TASK_ID:-na}] skip (exists): ${out}"
+      continue
+  fi
 
   # run macse-prep
   twig macse-refine \

@@ -1,29 +1,30 @@
 #!/usr/bin/env bash
 #
 # USAGE:
-#
+#   find PROCESSED_OGS/ -type f -name *.msa_raw.nt.fa | shuf > FILE_LISTS/burg_msa_raw_ogs_rng.txt
+#   sbatch SLURM_SCRIPTS/3-macse-refine.sbatch
 # ACTION:
-#
+#   Runs `twig macse-refine` on all msa_raw.nt.fa files to write final msas.
 # INPUT:
-#
+#   Run the find command (above) to generate the file list.
 # OUTPUT:
-#
+#   .msa.nt.fa and msa.aa.fa will be created.
 # CLUSTER RESOURCES REQUESTED:
 #   - submits 1000 jobs (cluster limit) with up to 500 running concurrently.
-#   - files are assigned evenly among jobs (~12 per job)
+#   - files are assigned evenly among jobs (~10 per job)
 #   - each job has 1 core for 10 hours with 8G RAM
 #
 #SBATCH --account=e3b
 #SBATCH -J twig
-#SBATCH -t 11:59:00
-#SBATCH --cpus-per-task=1
+#SBATCH -t 10:00:00
+#SBATCH --cpus-per-task=12
 #SBATCH --mem=8G
-#SBATCH --array=1-500
+#SBATCH --array=1-100
 #SBATCH -o twig-refine_%A_%a.log
 #SBATCH -e twig-refine_%A_%a.log
 
 # THE FILE LIST
-LIST="FILE_LISTS/burg-iso-rng.txt"
+LIST="FILE_LISTS/burg-msa-rng.txt"
 
 # set pipefail
 set -euo pipefail
@@ -62,15 +63,27 @@ end=$(( start + PER - 1))
 # read only the input filename for this array task ID and process it
 sed -n "${start},${end}p" "$LIST" | while IFS= read -r aln; do
 
-  # aln                               # PROCESSED_OGS/OG_9/OG_9.trim.nt.fa
-  ogdir="$(dirname $aln)"             # PROCESSED_OGS/OG_9/
-  base="$(basename $aln)"             # OG_9.trim.iso.nt.fa
-  og="${base%.trim.iso.nt.fa}"        # OG_9
-  msa="${ogdir}/${og}.msa_raw.nt.fa"  #
-  mkdir -p "$ogdir"
+    # skip if .raxml.support already exists
+    support="${aln}.raxml.support"
+    if [[ -s "$support" ]]; then
+        echo "[${SLURM_ARRAY_TASK_ID:-na}] skip (exists): $support"
+        continue
+    fi
 
-  # run macse-prep
-  twig macse-align \
-    -i "$aln" \
-    -o "$msa"
+    # write partitions file
+    twig partition-cds \
+        -i "$aln" \
+	-n 3 \
+	-m "GTR+G" \
+	> "${aln}.partitions"
+
+    # run raxml-ng
+    raxml-ng \
+        --all \
+        --msa "${aln}" \
+        --model "${aln}.partitions" \
+        --brlen scaled \
+        --seed 42 \
+        --bs-trees 100 \
+        --threads "${SLURM_CPUS_PER_TASK}"
 done
