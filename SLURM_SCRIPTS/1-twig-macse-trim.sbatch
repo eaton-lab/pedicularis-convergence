@@ -4,7 +4,7 @@
 #   - `find TMP_OGS/ -type f -name "*.fa" | shuf > FILE_LISTS/burg-ogs-rng.txt`
 #   - `sbatch SLURM_SCRIPTS/1-twig-macse-trim.sbatch
 # ACTION:
-#   - Runs `twig macse-prep` to trim/filter the raw orthogroups.
+#   - Runs `twig macse-trim` to trim/filter the raw orthogroups.
 # INPUT:
 #   - None. But you first must make a txt file with ordered files (see usage above)
 # OUTPUT:
@@ -76,20 +76,22 @@ sed -n "${start},${end}p" "$LIST" | while IFS= read -r aln; do
   id="${base#OG}"; id="${id%.fa}"        # 0008847
   id="$((10#$id))"                       # 8847
   og="OG_${id}"                          # OG_8847
-  ogdir="$OUT/${og}"                     # OGS/OG_8847/
-  trim="${ogdir}/${og}.trim.nt.fa"       # OGS/OG_8847/OG_8847.trim.nt.fa
-  log="${ogdir}/${og}.trim.log"          # OGS/OG_8847/OG_8847.trim.log
+  ogdir="$OUT/${og}"                     # {OUT}/OG_8847/
+  trim="${ogdir}/${og}.trim.nt.fa"       # {OUT}/OG_8847/OG_8847.trim.nt.fa
+  log="${ogdir}/${og}.trim.log"          # {OUT}/OG_8847/OG_8847.trim.log
   mkdir -p "$ogdir"
 
-  # run macse-prep
+  # skip if .log already exists; is written even if locus is filtered out
+  if [[ -s "$log" ]]; then
+    echo "[${SLURM_ARRAY_TASK_ID:-na}] skip (exists): ${trim}"
+    continue
+  fi
+
+  # run macse-trim
   twig macse-trim \
     -i "$aln" \
     -o "$trim" \
     -hf 0.3 -hi 0.6 -ml 200 -mc 25 -hc 15 -ti 33 -te 33 -f \
     2>"$log"
 
-  # remove the ogdir if no trim file (did not pass filtering)
-  if [[ -e "$trim" && ! -s "$trim" ]]; then
-    rm -r $ogdir
-  fi
 done
