@@ -21,8 +21,8 @@
 #SBATCH --cpus-per-task=1
 #SBATCH --mem=8G
 #SBATCH --array=1-1000
-#SBATCH -o twig-refine_%A_%a.log
-#SBATCH -e twig-refine_%A_%a.log
+#SBATCH -o twig-trim_%A_%a.log
+#SBATCH -e twig-trim_%A_%a.log
 
 # SET THE IN and OUT PATHS -------------------------
 LIST="FILE_LISTS/burg-ogs-rng.txt"
