@@ -1,16 +1,16 @@
 # run trimming on list of input OGS
 ```bash
 mkdir -p OGS/
-python SCRIPTS/find-ogs-todo.py TMP_OGS/ '.fa' OGS/ '.trim.nt.fa' | shuf > FILE_LISTS/TODO.txt
-sbatch SLURM_SCRIPTS/1-twig-macse-trim.sbatch FILE_LISTS/TODO.txt OGS/
+python SCRIPTS/find-ogs-todo.py TMP_OGS/ '.fa' OGS/ '.trim.nt.fa' | shuf > FILE_LISTS/TODO-1.txt
+sbatch SLURM_SCRIPTS/1-twig-macse-trim.sbatch FILE_LISTS/TODO-1.txt OGS/
 find TMP_OGS/ -type f -name '*.fa' -size +1b | wc -l
 # 13232
 ```
 
 # run isoform-pruning on list of trimmed OGS
 ```bash
-python SCRIPTS/find-ogs-todo.py OGS/ 'trim.nt.fa' OGS/ '.trim.iso.nt.fa' | shuf > FILE_LISTS/TODO.txt
-sbatch SLURM_SCRIPTS/2-twig-macse-iso.sbatch FILE_LISTS/TODO.txt
+python SCRIPTS/find-ogs-todo.py OGS/ 'trim.nt.fa' OGS/ '.trim.iso.nt.fa' | shuf > FILE_LISTS/TODO-2.txt
+sbatch SLURM_SCRIPTS/2-twig-macse-iso.sbatch FILE_LISTS/TODO-2.txt
 find OGS/ -type f -name '*.trim.iso.nt.fa' | wc -l
 # 13232
 ```
