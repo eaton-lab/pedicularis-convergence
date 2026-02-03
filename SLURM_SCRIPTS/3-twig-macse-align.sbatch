@@ -14,16 +14,16 @@
 #   - each job has 1 core for 10 hours with 8G RAM
 #
 #SBATCH --account=e3b
-#SBATCH -J twig
+#SBATCH -J twig-aln
 #SBATCH -t 11:59:00
 #SBATCH --cpus-per-task=1
-#SBATCH --mem=8G
-#SBATCH --array=1-500
-#SBATCH -o twig-refine_%A_%a.log
-#SBATCH -e twig-refine_%A_%a.log
+#SBATCH --mem=16G
+#SBATCH --array=1-10
+#SBATCH -o twig-align_%A_%a.log
+#SBATCH -e twig-align_%A_%a.log
 
 # THE FILE LIST
-LIST="FILE_LISTS/burg-iso-rng.txt"
+LIST="$1"
 
 # set pipefail
 set -euo pipefail
@@ -32,7 +32,7 @@ set -euo pipefail
 cd "${SLURM_SUBMIT_DIR:-$PWD}"
 
 # load conda env
-source "$HOME/miniconda3/etc/profile.d/conda.sh"
+source "/burg/home/de2356/miniconda3/etc/profile.d/conda.sh"
 conda activate twig
 
 # Build ordered list of files to process

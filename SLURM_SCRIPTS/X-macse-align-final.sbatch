@@ -15,15 +15,15 @@
 #
 #SBATCH --account=e3b
 #SBATCH -J twig
-#SBATCH -t 10:00:00
+#SBATCH -t 11:59:00
 #SBATCH --cpus-per-task=1
 #SBATCH --mem=8G
-#SBATCH --array=1-500
-#SBATCH -o twig-iso_%A_%a.log
-#SBATCH -e twig-iso_%A_%a.log
+#SBATCH --array=1-250
+#SBATCH -o twig-refine_%A_%a.log
+#SBATCH -e twig-refine_%A_%a.log
 
 # THE FILE LIST
-LIST="$1"
+LIST="FILE_LISTS/burg-final-isos.txt"
 
 # set pipefail
 set -euo pipefail
@@ -35,7 +35,7 @@ cd "${SLURM_SUBMIT_DIR:-$PWD}"
 source "$HOME/miniconda3/etc/profile.d/conda.sh"
 conda activate twig
 
-# Build ordered list of files to process --------------------------
+# Build ordered list of files to process
 [[ -s "$LIST" ]] || { echo "Missing/empty $LIST" >&2; exit 1; }
 
 # count njobs
@@ -58,26 +58,19 @@ end=$(( start + PER - 1))
 # if all jobs are finished, exit...
 (( start <= N )) || exit 0
 (( end > N )) && end=$N
-# ---------------------------------------------------------------
 
 # read only the input filename for this array task ID and process it
 sed -n "${start},${end}p" "$LIST" | while IFS= read -r aln; do
 
   # aln                               # PROCESSED_OGS/OG_9/OG_9.trim.nt.fa
-  info="${aln}.info.tsv"              # ...
   ogdir="$(dirname $aln)"             # PROCESSED_OGS/OG_9/
-  base="$(basename $aln)"             # OG_9.trim.nt.fa
-  og="${base%.trim.nt.fa}"            # OG_9
-  out="${ogdir}/${og}.trim.iso.nt.fa" #
-  log="${ogdir}/${og}.trim.iso.log"
-  #echo $aln $out $info $log
+  base="$(basename $aln)"             # OG_9.trim.iso.nt.fa
+  og="${base%.trim.iso.nt.fa}"        # OG_9
+  msa="${ogdir}/${og}.msa_raw.nt.fa"  #
+  mkdir -p "$ogdir"
 
   # run macse-prep
-  twig isoform-prune \
+  twig macse-align \
     -i "$aln" \
-    -o "$out" \
-    -I "$info" \
-    -s '.' 1 \
-    -l D \
-    2> "${log}"
+    -o "$msa"
 done

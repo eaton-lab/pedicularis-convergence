@@ -19,12 +19,12 @@
 #SBATCH -t 10:00:00
 #SBATCH --cpus-per-task=12
 #SBATCH --mem=8G
-#SBATCH --array=1-100
+#SBATCH --array=1-50
 #SBATCH -o twig-refine_%A_%a.log
 #SBATCH -e twig-refine_%A_%a.log
 
 # THE FILE LIST
-LIST="FILE_LISTS/burg-msa-rng.txt"
+LIST="$1"
 
 # set pipefail
 set -euo pipefail
@@ -33,7 +33,7 @@ set -euo pipefail
 cd "${SLURM_SUBMIT_DIR:-$PWD}"
 
 # load conda env
-source "$HOME/miniconda3/etc/profile.d/conda.sh"
+source "/burg/home/de2356/miniconda3/etc/profile.d/conda.sh"
 conda activate twig
 
 # Build ordered list of files to process

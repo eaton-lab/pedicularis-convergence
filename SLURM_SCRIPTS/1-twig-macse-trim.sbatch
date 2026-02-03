@@ -20,13 +20,13 @@
 #SBATCH -t 11:59:00
 #SBATCH --cpus-per-task=1
 #SBATCH --mem=8G
-#SBATCH --array=1-1000
+#SBATCH --array=1-900
 #SBATCH -o twig-trim_%A_%a.log
 #SBATCH -e twig-trim_%A_%a.log
 
 # SET THE IN and OUT PATHS -------------------------
-LIST="FILE_LISTS/burg-ogs-rng.txt"
-OUT="OGS"
+LIST="$1"
+OUT="$2"
 # --------------------------------------------------
 
 # REQUIRE LIST TO BE NON EMPTY
@@ -42,7 +42,7 @@ set -euo pipefail
 cd "${SLURM_SUBMIT_DIR:-$PWD}"
 
 # load conda env
-source "$HOME/miniconda3/etc/profile.d/conda.sh"
+source "/burg/home/de2356/miniconda3/etc/profile.d/conda.sh"
 conda activate twig
 
 # --- Figure out how many tasks/files need to be run per submitted job -----
