@@ -20,15 +20,15 @@ find OGS/ -type f -name '*.trim.iso.nt.fa' | wc -l
 python SCRIPTS/find-ogs-todo.py OGS/ 'trim.iso.nt.fa' OGS/ '.msa_raw.nt.fa' | shuf > FILE_LISTS/TODO-3.txt
 sbatch SLURM_SCRIPTS/3-twig-macse-align.sbatch FILE_LISTS/TODO-3.txt
 find OGS/ -type f -name '*.msa_raw.nt.fa' | wc -l
-# 13226  [ few large ones remain ]
+# 13228  [ discard the remaining 4 -- very large, takes too long to run ]
 ```
 
 # run refinement on list of alignments
 ```bash
 python SCRIPTS/find-ogs-todo.py OGS/ '.msa_raw.nt.fa' OGS/ '.msa.nt.fa' | shuf > FILE_LISTS/TODO-4.txt
 sbatch SLURM_SCRIPTS/4-twig-macse-refine.sbatch FILE_LISTS/TODO-4.txt
-find OGS/ -type f -name '*.msa.nt.fa' | wc -l
-# 13195  [ 37 filtered out by minsamp filter ]
+find OGS/ -type f -name '*.msa.nt.fa' -size +1b | wc -l
+# 13207  [ x filtered out by minsamp filter ]
 ```
 
 # run partitioned ML tree inference on refined alignments
@@ -36,7 +36,15 @@ find OGS/ -type f -name '*.msa.nt.fa' | wc -l
 python SCRIPTS/find-ogs-todo.py OGS/ '.msa.nt.fa' OGS/ '.msa.nt.fa.raxml.support' | shuf > FILE_LISTS/TODO-5.txt
 sbatch SLURM_SCRIPTS/5-raxml-ng.sbatch FILE_LISTS/TODO-5.txt
 find OGS/ -type f -name '*.raxml.support' | wc -l 
-# 13183
+# 13195
 ```
 
-# ...
+# filter trees to collapse low-support branches and require outgroups
+```bash
+SLURM_SCRIPTS/6-tree-filter-to-astral.sbatch
+find OGS/ -type f -name '*.collapse50.glabel' -size +1b | wc -l
+# 9418
+
+find OGS/ -type f -name '*.collapse50.glabel*' | wc -l 
+# 13195
+```
